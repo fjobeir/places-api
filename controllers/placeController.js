@@ -9,15 +9,6 @@ exports.index = function (req, res) {
         message: [],
         data: {}
     }
-    // const token = req.headers.authorization.split(' ')[1]
-    // isVerfied = authService.verifyUser(token);
-    // if (!token || !isVerfied) {
-    //     res.status(401);
-    //     response.success = false
-    //     response.message.push("You must be authonticated.")
-    //     res.send(response)
-    //     return
-    // }
     models.Place.findAll({
         include: [
             models.Category
