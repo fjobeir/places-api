@@ -2,6 +2,7 @@ var models = require('../models');
 var { placeTransformer, placesTransformer } = require('../transformers/placeTransformers')
 var authService = require('../services/auth');
 const fs = require('fs')
+const sequelize = require('sequelize')
 
 exports.index = async function (req, res) {
     var response = {
@@ -27,6 +28,7 @@ exports.index = async function (req, res) {
         attributes,
         order: (lat && lng) ? sequelize.col('distance') : ['title'],
         limit: 10,
+        raw: true,
         nest: true,
     })
         .then(places => {
