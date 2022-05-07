@@ -3,6 +3,9 @@ var router = express.Router();
 var placeController= require('../controllers/placeController')
 var path = require('path');
 const multer  = require('multer')
+const { isAuthenticated } = require('../middlewares/isAuthenticated');
+
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
       cb(null, 'uploads/')
@@ -30,8 +33,8 @@ const storage = multer.diskStorage({
     limits:{fileSize:1048576}
     })
 router.get('/', placeController.index);
-router.post('/',upload.single('picture'),placeController.store);
+router.post('/', isAuthenticated, upload.single('picture'),placeController.store);
 router.get('/:id', placeController.show);
-router.put('/:id', upload.single('picture'), placeController.update);
-router.delete('/:id', placeController.delete);
+router.put('/:id', isAuthenticated, upload.single('picture'), placeController.update);
+router.delete('/:id', isAuthenticated, placeController.delete);
 module.exports = router;

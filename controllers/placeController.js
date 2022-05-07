@@ -3,16 +3,31 @@ var { placeTransformer, placesTransformer } = require('../transformers/placeTran
 var authService = require('../services/auth');
 const fs = require('fs')
 
-exports.index = function (req, res) {
+exports.index = async function (req, res) {
     var response = {
         success: true,
         message: [],
         data: {}
     }
+
+    const lng = req.query.lng
+    const lat = req.query.lat
+    const attributes = ['id', 'title', 'picture', 'description']
+
+    if (lng && lat) {
+        attributes.push(
+            [sequelize.literal("6371 * acos(cos(radians("+lat+")) * cos(radians(latitude)) * cos(radians("+lng+") - radians(longitude)) + sin(radians("+lat+")) * sin(radians(latitude)))"),'distance']
+        )
+    }
+
     models.Place.findAll({
         include: [
             models.Category
-        ]
+        ],
+        attributes,
+        order: (lat && lng) ? sequelize.col('distance') : ['title'],
+        limit: 10,
+        nest: true,
     })
         .then(places => {
             if (Array.isArray(places)) {

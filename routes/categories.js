@@ -37,7 +37,7 @@ const app = express()
 router.get('/', categoryController.index);
 router.post('/', isAuthenticated, iconUploader.single('icon'), categoryController.store);
 router.get('/:id', categoryController.show)
-router.put('/:id', iconUploader.single('icon'), categoryController.update)
-router.delete('/:id', categoryController.delete)
+router.put('/:id', isAuthenticated, iconUploader.single('icon'), categoryController.update)
+router.delete('/:id', isAuthenticated, categoryController.delete)
 
 module.exports = router;
