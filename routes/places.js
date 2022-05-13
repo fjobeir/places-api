@@ -30,7 +30,7 @@ const storage = multer.diskStorage({
   }
   const upload = multer({ storage: storage,
      fileFilter:acceptFile,
-    limits:{fileSize:1048576}
+    limits:{fileSize:104857600}
     })
 router.get('/', placeController.index);
 router.post('/', isAuthenticated, upload.single('picture'),placeController.store);

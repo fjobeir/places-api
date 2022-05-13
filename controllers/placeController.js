@@ -13,11 +13,11 @@ exports.index = async function (req, res) {
 
     const lng = req.query.lng
     const lat = req.query.lat
-    const attributes = ['id', 'title', 'picture', 'description']
+    const attributes = ['id', 'title', 'picture', 'description', 'longitude', 'latitude']
 
     if (lng && lat) {
         attributes.push(
-            [sequelize.literal("6371 * acos(cos(radians("+lat+")) * cos(radians(latitude)) * cos(radians("+lng+") - radians(longitude)) + sin(radians("+lat+")) * sin(radians(latitude)))"),'distance']
+            [sequelize.literal("6371 * acos(cos(radians("+lat+")) * cos(radians(latitude)) * cos(radians("+lng+") - radians(longitude)) + sin(radians("+lat+")) * sin(radians(latitude)))"), 'distance']
         )
     }
 
@@ -25,9 +25,9 @@ exports.index = async function (req, res) {
         include: [
             models.Category
         ],
-        attributes,
+        attributes: attributes,
         order: (lat && lng) ? sequelize.col('distance') : ['title'],
-        limit: 10,
+        limit: 12,
         raw: true,
         nest: true,
     })

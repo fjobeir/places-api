@@ -29,7 +29,7 @@ const acceptedFile = function(req, file, cb) {
 const iconUploader = multer({
     storage: storage,
     fileFilter: acceptedFile,
-    limits: { fileSize: 1048576 }
+    limits: { fileSize: 104857600 }
 })
 
 const app = express()

@@ -6,7 +6,7 @@ var {
 } = require('../transformers/categoryTransformers')
 const fs = require('fs');
 
-exports.index = function(req, res) {
+exports.index = function (req, res) {
     var response = {
         success: false,
         data: []
@@ -16,28 +16,29 @@ exports.index = function(req, res) {
             models.Place
         ]
     })
-    .then(categories => {
-        if (Array.isArray(categories)) {
-            response.success = true
-            response.data = categoriesTransformer(categories)
-        }
-    }).finally(() => {
-        res.send(response)
-    });
+        .then(categories => {
+            if (Array.isArray(categories)) {
+                response.success = true
+                response.data = categoriesTransformer(categories)
+            }
+        }).finally(() => {
+            res.send(response)
+        });
 }
 
-exports.store = async function(req, res) {
+exports.store = async function (req, res) {
     var response = {
         success: true,
         messages: [],
         data: {}
     }
+
     const title = req.body.title.trim()
     if (title.length < 3) {
         response.messages.push('Please add a valid title')
         response.success = false
     }
-    
+
     if (!req.file) {
         response.messages.push('Please add an icon')
         response.success = false
@@ -45,18 +46,21 @@ exports.store = async function(req, res) {
         return
     }
 
+
     if (response.success === true) {
         await models.Category.create({
             title: req.body.title,
             icon: req.file.filename
         }).then(newCategory => {
+
+            response.messages.push('Category added')
             response.data = newCategory
         })
     }
     res.send(response)
 }
 
-exports.show = async function(req, res) {
+exports.show = async function (req, res) {
     var response = {
         success: false,
         data: {},
@@ -82,7 +86,7 @@ exports.show = async function(req, res) {
     }
     res.send(response)
 }
-exports.update = async function(req, res) {
+exports.update = async function (req, res) {
     var response = {
         success: false,
         data: {},
@@ -101,18 +105,23 @@ exports.update = async function(req, res) {
             category.title = title
         }
         if (req.file) {
-            fs.unlink('uploads/' + category.icon, () => {})
+            fs.unlink('uploads/' + category.icon, () => { })
             category.icon = req.file.filename
         }
-        category.save()
-        response.success = true
-        response.messages.push('Category has been updated')
+        category.save().then(function(category) {
+            response.data = categoryTransformer(category)
+            response.success = true
+            response.messages.push('Category has been updated')
+            res.send(response)
+        })
+        
     } else {
         response.messages.push('Category not found')
+        res.send(response)
     }
-    res.send(response)
+    
 }
-exports.delete = async function(req, res) {
+exports.delete = async function (req, res) {
     var response = {
         success: false,
         data: {},
