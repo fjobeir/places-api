@@ -16,21 +16,15 @@ var authService = {
         );
         return token;
     },
-    verifyUser: function (token) {
+    verifyUser: async function (token) {
         if (!token) {
             return false
         }
-        try {
-            let decoded = jwt.verify(token, 'secretkey');
-            return models.Admin.findByPk(decoded.id).then((admin) => {
-                if (admin) {
-                    return admin
-                } else {
-                    return false
-                }
-            })
-        } catch (err) {
-            console.log(err)
+        let decoded = jwt.verify(token, 'secretkey');
+        const admin = await models.Admin.findByPk(decoded.id)
+        if (admin) {
+            return admin
+        } else {
             return false
         }
     },

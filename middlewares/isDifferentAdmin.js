@@ -1,17 +1,16 @@
 const authService = require('../services/auth');
 
-exports.isAuthenticated = async function(req, res, next) {
+exports.isDifferentAdmin = async function(req, res, next) {
     const token = req.headers?.authorization?.split(' ')[1]
     isVerfied = await authService.verifyUser(token);
-    console.log('isVerfied', isVerfied)
-    if (isVerfied) {
+    if (isVerfied?.id != req.params.id) {
         return next()
     }
-    res.status(401)
+    res.status(403)
     res.send({
         success: false,
         messages: [
-            'Please login to access this endpoint'
+            'You cannot perform this action'
         ]
     })
     return 
