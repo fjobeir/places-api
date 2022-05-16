@@ -112,15 +112,6 @@ exports.update = async function (req, res) {
         message: [],
         data: {}
     }
-    const token = req.headers.authorization.split(' ')[1]
-    isVerfied = authService.verifyUser(token);
-    if (!token || !isVerfied) {
-        res.status(401);
-        response.success = false
-        response.message.push("You must be authonticated.")
-        res.send(response)
-        return
-    }
     const id = req.params.id
     if (isNaN(id)) {
         response.message.push("Please provide a valid ID")
@@ -128,11 +119,13 @@ exports.update = async function (req, res) {
         res.send(response)
         return
     }
-    // const updated=await models.Category.update(req.body,)
     const place = await models.Place.findByPk(id)
     if (place) {
         if (req.body.title) {
             place.title = req.body.title
+        }
+        if (req.body.description) {
+            place.description = req.body.description
         }
         if (req.body.latitude) {
             place.latitude = req.body.latitude
@@ -147,27 +140,24 @@ exports.update = async function (req, res) {
             fs.unlink('uploads/' + place.picture, () => { })
             place.picture = req.file.filename
         }
-        place.save()
-        response.message.push("place has been updated")
+        place.save().then((place) => {
+            response.data = placeTransformer(place)
+            response.message.push("place has been updated")
+            response.success = true
+            res.send(response)
+        })
+        
     } else {
         response.message.push("not found")
+        res.send(response)
     }
-    res.send(response)
+    
 }
 exports.delete = async function (req, res) {
     var response = {
         success: false,
         message: [],
         data: {}
-    }
-    const token = req.headers.authorization.split(' ')[1]
-    isVerfied = authService.verifyUser(token);
-    if (!token || !isVerfied) {
-        res.status(401);
-        response.success = false
-        response.message.push("You must be authonticated.")
-        res.send(response)
-        return
     }
     const id = req.params.id
     if (isNaN(id)) {

@@ -7,18 +7,8 @@ exports.index = function (req, res) {
         message: [],
         data: {}
     }
-    const token = req.headers.authorization.split(' ')[1]
-    isVerfied = authService.verifyUser(token);
-    if (!token || !isVerfied) {
-        res.status(401);
-        response.success = false
-        response.message.push("You must be authonticated.")
-        res.send(response)
-        return
-    }
     models.Admin.findAll({})
         .then(admins => {
-            console.log("adminnnn", admins)
             if (Array.isArray(admins)) {
                 response.data = admins
                 response.success = true
@@ -31,9 +21,29 @@ exports.index = function (req, res) {
 }
 exports.signup = async function (req, res, next) {
     var response = {
-        success: false,
+        success: true,
         message: [],
         data: {}
+    }
+    if (!req.body?.name?.length) {
+        response.message.push("Please add a name")
+        response.success = false
+    }
+    if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.body?.email))) {
+        response.message.push("Please add a valid email")
+        response.success = false
+    }
+    if (req?.body?.password?.length < 6) {
+        response.message.push("Please add a valid password")
+        response.success = false
+    }
+    if (req?.body?.password != req?.body?.password_confirmation) {
+        response.message.push("Your password and password confirmation do not match")
+        response.success = false
+    }
+    if (!response.success) {
+        res.send(response)
+        return
     }
     const [user, created] = await models.Admin.findOrCreate({
         where: {
@@ -100,15 +110,6 @@ exports.show = async function (req, res, next) {
         message: [],
         data: {}
     }
-    const token = req.headers.authorization.split(' ')[1]
-    isVerfied = authService.verifyUser(token);
-    if (!token || !isVerfied) {
-        res.status(401);
-        response.success = false
-        response.message.push("You must be authonticated.")
-        res.send(response)
-        return
-    }
     if (isNaN(id)) {
         response.message.push("Please provide a valid ID")
         response.success = false
@@ -128,28 +129,34 @@ exports.show = async function (req, res, next) {
 //update User
 exports.update = async function (req, res, next) {
     let response = {
-        message: [],
-        success: false,
+        messages: [],
+        success: true,
         data: {}
-    }
-    const token = req.headers.authorization.split(' ')[1]
-    isVerfied = authService.verifyUser(token);
-    if (!token || !isVerfied) {
-        res.status(401);
-        response.success = false
-        response.message.push("You must be authonticated.")
-        res.send(response)
-        return
     }
     const id = req.params.id
     if (isNaN(id)) {
-        response.message.push("Please provide a valid ID")
+        response.messages.push("Please provide a valid ID")
         response.success = false
+        res.send(response)
+        return
+    }
+    if (!req.body?.name?.length) {
+        response.messages.push("Please add a name")
+        response.success = false
+    }
+    if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.body?.email))) {
+        response.messages.push("Please add a valid email")
+        response.success = false
+    }
+    if (req?.body?.password != req?.body?.password_confirmation) {
+        response.messages.push("Your password and password confirmation do not match")
+        response.success = false
+    }
+    if (!response.success) {
         res.send(response)
         return
     }
     const updated = await models.Admin.findByPk(id)
-    console.log("updated",)
     if (updated) {
         if (req.body.name) {
             updated.name = req.body.name
@@ -160,36 +167,30 @@ exports.update = async function (req, res, next) {
         if (req.body.email) {
             updated.email = req.body.email
         }
-        updated.save()
-        response.message.push('Successfully Updated')
-        response.success = true
-        response.data = updated
+        updated.save().then((admin) => {
+            response.messages.push('Successfully Updated')
+            response.success = true
+            response.data = admin
+            res.send(response)
+        })
     } else {
         res.status(400);
-        response.message.push('There was a problem updating the user.  Please check the user information.')
+        response.messages.push('There was a problem updating the user.  Please check the user information.')
         response.success = false
+        res.send(response)
     }
-    res.send(response)
+    
 }
 //delete user
 exports.delete = async function (req, res, next) {
     let response = {
-        message: [],
+        messages: [],
         success: false,
         data: {}
     }
-    const token = req.headers.authorization.split(' ')[1]
-    isVerfied = authService.verifyUser(token);
-    if (!token || !isVerfied) {
-        res.status(401);
-        response.success = false
-        response.message.push("You must be authonticated.")
-        res.send(response)
-        return
-    }
     const id = req.params.id
     if (isNaN(id)) {
-        response.message.push("Please provide a valid ID")
+        response.messages.push("Please provide a valid ID")
         response.success = false
         res.send(response)
         return
@@ -200,10 +201,10 @@ exports.delete = async function (req, res, next) {
         }
     })
     if (deleted == 1) {
-        response.message.push("Admin has been deleted")
+        response.messages.push("Admin has been deleted")
         response.success = true
     } else {
-        response.message.push("Admin has not been deleted")
+        response.messages.push("Admin has not been deleted")
     }
     res.send(response)
 }
