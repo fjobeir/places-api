@@ -20,13 +20,18 @@ var authService = {
         if (!token) {
             return false
         }
-        let decoded = jwt.verify(token, 'secretkey');
-        const admin = await models.Admin.findByPk(decoded.id)
-        if (admin) {
-            return admin
-        } else {
+        try {
+            let decoded = jwt.verify(token, 'secretkey');
+            const admin = await models.Admin.findByPk(decoded.id)
+            if (admin) {
+                return admin
+            } else {
+                return false
+            }
+        } catch (error) {
             return false
         }
+        
     },
     hashPassword: function (plainTextPassword) {
         let salt = bcrypt.genSaltSync(10);

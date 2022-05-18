@@ -22,23 +22,23 @@ exports.index = function (req, res) {
 exports.signup = async function (req, res, next) {
     var response = {
         success: true,
-        message: [],
+        messages: [],
         data: {}
     }
     if (!req.body?.name?.length) {
-        response.message.push("Please add a name")
+        response.messages.push("Please add a name")
         response.success = false
     }
     if (!(/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(req.body?.email))) {
-        response.message.push("Please add a valid email")
+        response.messages.push("Please add a valid email")
         response.success = false
     }
     if (req?.body?.password?.length < 6) {
-        response.message.push("Please add a valid password")
+        response.messages.push("Please add a valid password")
         response.success = false
     }
     if (req?.body?.password != req?.body?.password_confirmation) {
-        response.message.push("Your password and password confirmation do not match")
+        response.messages.push("Your password and password confirmation do not match")
         response.success = false
     }
     if (!response.success) {
@@ -55,20 +55,19 @@ exports.signup = async function (req, res, next) {
         }
     });
     if (created) {
-        response.message.push("User successfully created")
+        response.messages.push("User successfully created")
         response.success = true
         res.send(response);
     } else {
-        response.message.push("This user already exists")
+        response.messages.push("This user already exists")
         response.success = false
         res.send(response);
     }
 }
 exports.login = async function (req, res, next) {
-    console.log("req.body.email")
     var response = {
         success: false,
-        message: [],
+        messages: [],
         data: {}
     }
     models.Admin.findOne({
@@ -78,19 +77,19 @@ exports.login = async function (req, res, next) {
     }).then(admin => {
         console.log("adminnn", admin)
         if (!admin) {
-            response.message.push("Login Failed")
+            response.messages.push("Login Failed")
             response.success = false
             res.send(response);
         } else {
             let passwordMatch = authService.comparePasswords(req.body.password, admin.password);
             if (passwordMatch) {
                 let token = authService.signUser(admin);
-                response.message.push("Login successful")
+                response.messages.push("Login successful")
                 response.success = true
                 response.token = token
                 res.send(response);
             } else {
-                response.message.push("Wrong password")
+                response.messages.push("Wrong password")
                 response.success = false
                 res.send(response);
             }
@@ -98,7 +97,7 @@ exports.login = async function (req, res, next) {
     })
         .catch(err => {
             res.status(400);
-            response.message.push("There was a problem in logging in. Make sure of the information you entered")
+            response.messages.push("There was a problem in logging in. Make sure of the information you entered")
             response.success = false
             res.send(response)
         });
@@ -107,11 +106,11 @@ exports.show = async function (req, res, next) {
     const id = req.params.id
     var response = {
         success: false,
-        message: [],
+        messages: [],
         data: {}
     }
     if (isNaN(id)) {
-        response.message.push("Please provide a valid ID")
+        response.messages.push("Please provide a valid ID")
         response.success = false
         res.send(response)
         return
@@ -121,7 +120,7 @@ exports.show = async function (req, res, next) {
         response.success = true;
         response.data = admin
     } else {
-        response.message.push("admin not found")
+        response.messages.push("admin not found")
         res.status(404)
     }
     res.send(response)
