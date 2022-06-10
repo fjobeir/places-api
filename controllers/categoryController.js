@@ -52,7 +52,6 @@ exports.store = async function (req, res) {
             title: req.body.title,
             icon: req.file.filename
         }).then(newCategory => {
-
             response.messages.push('Category added')
             response.data = newCategory
         })
